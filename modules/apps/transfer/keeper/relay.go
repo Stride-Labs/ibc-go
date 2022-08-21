@@ -159,7 +159,7 @@ func (k Keeper) SendTransfer(
 	)
 
 	if err := k.ics4Wrapper.SendPacket(ctx, channelCap, packet); err != nil {
-		return err
+		return 0, err
 	}
 
 	defer func() {
