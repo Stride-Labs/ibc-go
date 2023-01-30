@@ -221,7 +221,8 @@ func (im IBCModule) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
-	fmt.Println("ON ACK PACKET - TRANSFER")
+	fmt.Println("ON ACK PACKET - TRANSFER ", ctx.BlockHeight())
+	fmt.Println("INVOKING ERROR ", ctx.BlockHeight())
 
 	return errors.New("ERROR FORCED FROM TRANSFER")
 
