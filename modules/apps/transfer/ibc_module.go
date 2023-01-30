@@ -221,8 +221,8 @@ func (im IBCModule) OnAcknowledgementPacket(
 	relayer sdk.AccAddress,
 ) error {
 	fmt.Println("ON ACK PACKET - TRANSFER", ctx.BlockHeight())
-	fmt.Println("INVOKING ERROR", ctx.BlockHeight())
 
+	// fmt.Println("INVOKING ERROR", ctx.BlockHeight())
 	// return errors.New("ERROR FORCED FROM TRANSFER")
 
 	var ack channeltypes.Acknowledgement
