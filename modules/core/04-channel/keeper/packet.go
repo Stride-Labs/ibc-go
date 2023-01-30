@@ -390,7 +390,7 @@ func (k Keeper) AcknowledgePacket(
 	proof []byte,
 	proofHeight exported.Height,
 ) error {
-	fmt.Println("ON ACK PACKET - CHANNEL KEEPER", ctx.BlockTime())
+	fmt.Println("ON ACK PACKET - CHANNEL KEEPER", ctx.BlockHeight())
 
 	channel, found := k.GetChannel(ctx, packet.GetSourcePort(), packet.GetSourceChannel())
 	if !found {
