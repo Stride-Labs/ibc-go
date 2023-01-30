@@ -1,6 +1,7 @@
 package transfer
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"strings"
@@ -221,6 +222,8 @@ func (im IBCModule) OnAcknowledgementPacket(
 	relayer sdk.AccAddress,
 ) error {
 	fmt.Println("ON ACK PACKET - TRANSFER")
+
+	return errors.New("ERROR FORCED FROM TRANSFER")
 
 	var ack channeltypes.Acknowledgement
 	if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
