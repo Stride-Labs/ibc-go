@@ -25,6 +25,8 @@ func (k Keeper) SendPacket(
 	channelCap *capabilitytypes.Capability,
 	packet exported.PacketI,
 ) error {
+	fmt.Println("SEND PACKET - CHANNEL")
+
 	if err := packet.ValidateBasic(); err != nil {
 		return sdkerrors.Wrap(err, "packet failed basic validation")
 	}

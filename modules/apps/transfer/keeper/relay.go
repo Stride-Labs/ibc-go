@@ -86,6 +86,8 @@ func (k Keeper) sendTransfer(
 	timeoutTimestamp uint64,
 	memo string,
 ) (uint64, error) {
+	fmt.Println("SEND TRANSFER")
+
 	if !k.GetSendEnabled(ctx) {
 		return 0, types.ErrSendDisabled
 	}
