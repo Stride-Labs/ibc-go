@@ -585,9 +585,8 @@ func (k Keeper) TimeoutOnClose(goCtx context.Context, msg *channeltypes.MsgTimeo
 
 // Acknowledgement defines a rpc handler method for MsgAcknowledgement.
 func (k Keeper) Acknowledgement(goCtx context.Context, msg *channeltypes.MsgAcknowledgement) (*channeltypes.MsgAcknowledgementResponse, error) {
-	fmt.Println("CORE IBC MSG SERVER - IBC KEEPER - ACKNOWLEDGEMENT")
-
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	fmt.Println("CORE IBC MSG SERVER - IBC KEEPER - ACKNOWLEDGEMENT", ctx.BlockHeight())
 
 	relayer, err := sdk.AccAddressFromBech32(msg.Signer)
 	if err != nil {
