@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	metrics "github.com/armon/go-metrics"
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -584,6 +585,8 @@ func (k Keeper) TimeoutOnClose(goCtx context.Context, msg *channeltypes.MsgTimeo
 
 // Acknowledgement defines a rpc handler method for MsgAcknowledgement.
 func (k Keeper) Acknowledgement(goCtx context.Context, msg *channeltypes.MsgAcknowledgement) (*channeltypes.MsgAcknowledgementResponse, error) {
+	fmt.Println("CORE IBC MSG SERVER - IBC KEEPER - ACKNOWLEDGEMENT")
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	relayer, err := sdk.AccAddressFromBech32(msg.Signer)
@@ -593,6 +596,7 @@ func (k Keeper) Acknowledgement(goCtx context.Context, msg *channeltypes.MsgAckn
 
 	// Lookup module by channel capability
 	module, cap, err := k.ChannelKeeper.LookupModuleByChannel(ctx, msg.Packet.SourcePort, msg.Packet.SourceChannel)
+	fmt.Println("MODULE FROM CHANNEL CAPABILITY:", module)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "could not retrieve module from port-id")
 	}
