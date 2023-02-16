@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
@@ -46,6 +48,8 @@ func (im IBCMiddleware) OnChanOpenInit(
 	counterparty channeltypes.Counterparty,
 	version string,
 ) (string, error) {
+	fmt.Printf("ICA CONTROLLER - CHAN OPEN INIT - PORT: %s\n", portID)
+
 	if !im.keeper.IsControllerEnabled(ctx) {
 		return "", types.ErrControllerSubModuleDisabled
 	}
@@ -76,6 +80,8 @@ func (im IBCMiddleware) OnChanOpenTry(
 	counterparty channeltypes.Counterparty,
 	counterpartyVersion string,
 ) (string, error) {
+	fmt.Printf("ICA CONTROLLER - CHAN OPEN TRY - PORT: %s\n", portID)
+
 	return "", sdkerrors.Wrap(icatypes.ErrInvalidChannelFlow, "channel handshake must be initiated by controller chain")
 }
 
@@ -92,6 +98,8 @@ func (im IBCMiddleware) OnChanOpenAck(
 	counterpartyChannelID string,
 	counterpartyVersion string,
 ) error {
+	fmt.Printf("ICA CONTROLLER - CHAN OPEN ACK - CHANNEL: %s, PORT: %s\n", channelID, portID)
+
 	if !im.keeper.IsControllerEnabled(ctx) {
 		return types.ErrControllerSubModuleDisabled
 	}
@@ -110,6 +118,7 @@ func (im IBCMiddleware) OnChanOpenConfirm(
 	portID,
 	channelID string,
 ) error {
+	fmt.Printf("ICA CONTROLLER - CHAN OPEN CONFIRM - CHANNEL: %s, PORT: %s\n", channelID, portID)
 	return sdkerrors.Wrap(icatypes.ErrInvalidChannelFlow, "channel handshake must be initiated by controller chain")
 }
 
@@ -151,11 +160,14 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
+	fmt.Printf("ICA CONTROLLER - ON ACK PACKET - SOURCE PORT: %s, DESTINATION PORT: %s", packet.GetSourcePort(), packet.GetSourceChannel())
+
 	if !im.keeper.IsControllerEnabled(ctx) {
 		return types.ErrControllerSubModuleDisabled
 	}
 
 	// call underlying app's OnAcknowledgementPacket callback.
+	fmt.Printf("ICA CONTROLLER - CALLING MIDDLEWARE ON ACK PACKET - SOURCE PORT: %s, DESTINATION PORT: %s\n", packet.GetSourcePort(), packet.GetSourceChannel())
 	return im.app.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 }
 
