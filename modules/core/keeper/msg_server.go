@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	metrics "github.com/armon/go-metrics"
 	"github.com/cosmos/cosmos-sdk/telemetry"
@@ -162,6 +163,7 @@ func (k Keeper) ConnectionOpenConfirm(goCtx context.Context, msg *connectiontype
 // ChannelOpenInit will perform 04-channel checks, route to the application
 // callback, and write an OpenInit channel into state upon successful execution.
 func (k Keeper) ChannelOpenInit(goCtx context.Context, msg *channeltypes.MsgChannelOpenInit) (*channeltypes.MsgChannelOpenInitResponse, error) {
+	fmt.Printf("CORE - CHAN OPEN INIT - PORT: %s\n", msg.PortId)
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// Lookup module by port capability
@@ -171,12 +173,14 @@ func (k Keeper) ChannelOpenInit(goCtx context.Context, msg *channeltypes.MsgChan
 	}
 
 	// Retrieve application callbacks from router
+	fmt.Printf("CORE - CHAN OPEN INIT - PORT: %s, MODULE FROM PORT: %s\n", msg.PortId, module)
 	cbs, ok := k.Router.GetRoute(module)
 	if !ok {
 		return nil, sdkerrors.Wrapf(porttypes.ErrInvalidRoute, "route not found to module: %s", module)
 	}
 
 	// Perform 04-channel verification
+	fmt.Println("CORE - CALLING CHANNEL KEEPER CHAN OPEN INIT")
 	channelID, cap, err := k.ChannelKeeper.ChanOpenInit(
 		ctx, msg.Channel.Ordering, msg.Channel.ConnectionHops, msg.PortId,
 		portCap, msg.Channel.Counterparty, msg.Channel.Version,
@@ -186,6 +190,7 @@ func (k Keeper) ChannelOpenInit(goCtx context.Context, msg *channeltypes.MsgChan
 	}
 
 	// Perform application logic callback
+	fmt.Printf("CORE - CALLING %s KEEPER CHAN OPEN INIT\n", module)
 	version, err := cbs.OnChanOpenInit(ctx, msg.Channel.Ordering, msg.Channel.ConnectionHops, msg.PortId, channelID, cap, msg.Channel.Counterparty, msg.Channel.Version)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "channel open init callback failed")
@@ -204,6 +209,7 @@ func (k Keeper) ChannelOpenInit(goCtx context.Context, msg *channeltypes.MsgChan
 // ChannelOpenTry will perform 04-channel checks, route to the application
 // callback, and write an OpenTry channel into state upon successful execution.
 func (k Keeper) ChannelOpenTry(goCtx context.Context, msg *channeltypes.MsgChannelOpenTry) (*channeltypes.MsgChannelOpenTryResponse, error) {
+	fmt.Printf("CORE - CHAN OPEN TRY - PORT: %s\n", msg.PortId)
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// Lookup module by port capability
@@ -213,12 +219,14 @@ func (k Keeper) ChannelOpenTry(goCtx context.Context, msg *channeltypes.MsgChann
 	}
 
 	// Retrieve application callbacks from router
+	fmt.Printf("CORE - CHAN OPEN TRY - PORT: %s, MODULE FROM PORT: %s\n", msg.PortId, module)
 	cbs, ok := k.Router.GetRoute(module)
 	if !ok {
 		return nil, sdkerrors.Wrapf(porttypes.ErrInvalidRoute, "route not found to module: %s", module)
 	}
 
 	// Perform 04-channel verification
+	fmt.Println("CORE - CALLING CHANNEL KEEPER CHAN OPEN TRY")
 	channelID, cap, err := k.ChannelKeeper.ChanOpenTry(ctx, msg.Channel.Ordering, msg.Channel.ConnectionHops, msg.PortId,
 		portCap, msg.Channel.Counterparty, msg.CounterpartyVersion, msg.ProofInit, msg.ProofHeight,
 	)
@@ -227,6 +235,7 @@ func (k Keeper) ChannelOpenTry(goCtx context.Context, msg *channeltypes.MsgChann
 	}
 
 	// Perform application logic callback
+	fmt.Printf("CORE - CALLING %s KEEPER CHAN OPEN TRY\n", module)
 	version, err := cbs.OnChanOpenTry(ctx, msg.Channel.Ordering, msg.Channel.ConnectionHops, msg.PortId, channelID, cap, msg.Channel.Counterparty, msg.CounterpartyVersion)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "channel open try callback failed")
@@ -244,6 +253,8 @@ func (k Keeper) ChannelOpenTry(goCtx context.Context, msg *channeltypes.MsgChann
 // ChannelOpenAck will perform 04-channel checks, route to the application
 // callback, and write an OpenAck channel into state upon successful execution.
 func (k Keeper) ChannelOpenAck(goCtx context.Context, msg *channeltypes.MsgChannelOpenAck) (*channeltypes.MsgChannelOpenAckResponse, error) {
+	fmt.Printf("CORE - CHAN OPEN ACK - CHANNEL: %s, PORT: %s\n", msg.ChannelId, msg.PortId)
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// Lookup module by channel capability
@@ -253,12 +264,14 @@ func (k Keeper) ChannelOpenAck(goCtx context.Context, msg *channeltypes.MsgChann
 	}
 
 	// Retrieve application callbacks from router
+	fmt.Printf("CORE - CHAN OPEN ACK - CHANNEL: %s, PORT: %s, MODULE FROM PORT: %s\n", msg.ChannelId, msg.PortId, module)
 	cbs, ok := k.Router.GetRoute(module)
 	if !ok {
 		return nil, sdkerrors.Wrapf(porttypes.ErrInvalidRoute, "route not found to module: %s", module)
 	}
 
 	// Perform 04-channel verification
+	fmt.Println("CORE - CALLING CHANNEL KEEPER CHAN OPEN ACK")
 	if err = k.ChannelKeeper.ChanOpenAck(
 		ctx, msg.PortId, msg.ChannelId, cap, msg.CounterpartyVersion, msg.CounterpartyChannelId, msg.ProofTry, msg.ProofHeight,
 	); err != nil {
@@ -266,6 +279,7 @@ func (k Keeper) ChannelOpenAck(goCtx context.Context, msg *channeltypes.MsgChann
 	}
 
 	// Perform application logic callback
+	fmt.Printf("CORE - CALLING %s KEEPER CHAN OPEN ACK\n", module)
 	if err = cbs.OnChanOpenAck(ctx, msg.PortId, msg.ChannelId, msg.CounterpartyChannelId, msg.CounterpartyVersion); err != nil {
 		return nil, sdkerrors.Wrap(err, "channel open ack callback failed")
 	}
@@ -280,6 +294,8 @@ func (k Keeper) ChannelOpenAck(goCtx context.Context, msg *channeltypes.MsgChann
 // ChannelOpenConfirm will perform 04-channel checks, route to the application
 // callback, and write an OpenConfirm channel into state upon successful execution.
 func (k Keeper) ChannelOpenConfirm(goCtx context.Context, msg *channeltypes.MsgChannelOpenConfirm) (*channeltypes.MsgChannelOpenConfirmResponse, error) {
+	fmt.Printf("CORE - CHAN OPEN CONFIRM - CHANNEL: %s, PORT: %s\n", msg.ChannelId, msg.PortId)
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// Lookup module by channel capability
@@ -289,17 +305,20 @@ func (k Keeper) ChannelOpenConfirm(goCtx context.Context, msg *channeltypes.MsgC
 	}
 
 	// Retrieve application callbacks from router
+	fmt.Printf("CORE - CHAN OPEN CONFIRM - CHANNEL: %s, PORT: %s, MODULE FROM PORT: %s\n", msg.ChannelId, msg.PortId, module)
 	cbs, ok := k.Router.GetRoute(module)
 	if !ok {
 		return nil, sdkerrors.Wrapf(porttypes.ErrInvalidRoute, "route not found to module: %s", module)
 	}
 
 	// Perform 04-channel verification
+	fmt.Println("CORE - CALLING CHANNEL KEEPER CHAN OPEN CONFIRM")
 	if err = k.ChannelKeeper.ChanOpenConfirm(ctx, msg.PortId, msg.ChannelId, cap, msg.ProofAck, msg.ProofHeight); err != nil {
 		return nil, sdkerrors.Wrap(err, "channel handshake open confirm failed")
 	}
 
 	// Perform application logic callback
+	fmt.Printf("CORE - CALLING %s KEEPER CHAN OPEN CONFIRM\n", module)
 	if err = cbs.OnChanOpenConfirm(ctx, msg.PortId, msg.ChannelId); err != nil {
 		return nil, sdkerrors.Wrap(err, "channel open confirm callback failed")
 	}
@@ -584,6 +603,8 @@ func (k Keeper) TimeoutOnClose(goCtx context.Context, msg *channeltypes.MsgTimeo
 
 // Acknowledgement defines a rpc handler method for MsgAcknowledgement.
 func (k Keeper) Acknowledgement(goCtx context.Context, msg *channeltypes.MsgAcknowledgement) (*channeltypes.MsgAcknowledgementResponse, error) {
+	fmt.Printf("CORE - ACKNOWLEDGEMENT - SOURCE PORT: %s, DESTINATION PORT: %s\n", msg.Packet.SourcePort, msg.Packet.DestinationPort)
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	relayer, err := sdk.AccAddressFromBech32(msg.Signer)
@@ -598,6 +619,7 @@ func (k Keeper) Acknowledgement(goCtx context.Context, msg *channeltypes.MsgAckn
 	}
 
 	// Retrieve callbacks from router
+	fmt.Printf("CORE - ACKNOWLEDGEMENT - SOURCE PORT: %s, DESTINATION PORT: %s, MODULE FROM PORT: %s\n", msg.Packet.SourcePort, msg.Packet.DestinationPort, module)
 	cbs, ok := k.Router.GetRoute(module)
 	if !ok {
 		return nil, sdkerrors.Wrapf(porttypes.ErrInvalidRoute, "route not found to module: %s", module)
@@ -608,6 +630,7 @@ func (k Keeper) Acknowledgement(goCtx context.Context, msg *channeltypes.MsgAckn
 	// If the acknowledgement was already received, perform a no-op
 	// Use a cached context to prevent accidental state changes
 	cacheCtx, writeFn := ctx.CacheContext()
+	fmt.Println("CORE - CALLING CHANNEL KEEPER ACKNOWLEDGEMENT")
 	err = k.ChannelKeeper.AcknowledgePacket(cacheCtx, cap, msg.Packet, msg.Acknowledgement, msg.ProofAcked, msg.ProofHeight)
 
 	// NOTE: The context returned by CacheContext() refers to a new EventManager, so it needs to explicitly set events to the original context.
@@ -623,6 +646,7 @@ func (k Keeper) Acknowledgement(goCtx context.Context, msg *channeltypes.MsgAckn
 	}
 
 	// Perform application logic callback
+	fmt.Printf("CORE - %s CHANNEL KEEPER ACKNOWLEDGEMENT\n", module)
 	err = cbs.OnAcknowledgementPacket(ctx, msg.Packet, msg.Acknowledgement, relayer)
 	if err != nil {
 		return nil, sdkerrors.Wrap(err, "acknowledge packet callback failed")
