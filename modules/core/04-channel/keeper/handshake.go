@@ -27,6 +27,8 @@ func (k Keeper) ChanOpenInit(
 	counterparty types.Counterparty,
 	version string,
 ) (string, *capabilitytypes.Capability, error) {
+	fmt.Printf("CHANNEL - CHAN OPEN INIT - PORT: %s\n", portID)
+
 	// connection hop length checked on msg.ValidateBasic()
 	connectionEnd, found := k.connectionKeeper.GetConnection(ctx, connectionHops[0])
 	if !found {
@@ -105,6 +107,8 @@ func (k Keeper) ChanOpenTry(
 	proofInit []byte,
 	proofHeight exported.Height,
 ) (string, *capabilitytypes.Capability, error) {
+	fmt.Printf("CHANNEL - CHAN OPEN TRY - PORT: %s\n", portID)
+
 	// connection hops only supports a single connection
 	if len(connectionHops) != 1 {
 		return "", nil, sdkerrors.Wrapf(types.ErrTooManyConnectionHops, "expected 1, got %d", len(connectionHops))
@@ -217,6 +221,8 @@ func (k Keeper) ChanOpenAck(
 	proofTry []byte,
 	proofHeight exported.Height,
 ) error {
+	fmt.Printf("CHANNEL - CHAN OPEN ACK - CHANNEL: %s  - PORT: %s\n", channelID, portID)
+
 	channel, found := k.GetChannel(ctx, portID, channelID)
 	if !found {
 		return sdkerrors.Wrapf(types.ErrChannelNotFound, "port ID (%s) channel ID (%s)", portID, channelID)
@@ -300,6 +306,8 @@ func (k Keeper) ChanOpenConfirm(
 	proofAck []byte,
 	proofHeight exported.Height,
 ) error {
+	fmt.Printf("CHANNEL - CHAN OPEN CONFIRM - CHANNEL: %s - PORT: %s\n", channelID, portID)
+
 	channel, found := k.GetChannel(ctx, portID, channelID)
 	if !found {
 		return sdkerrors.Wrapf(types.ErrChannelNotFound, "port ID (%s) channel ID (%s)", portID, channelID)

@@ -72,6 +72,8 @@ func (im IBCModule) OnChanOpenInit(
 	counterparty channeltypes.Counterparty,
 	version string,
 ) (string, error) {
+	fmt.Printf("TRANSFER - CHAN OPEN INIT - PORT: %s\n", portID)
+
 	if err := ValidateTransferChannelParams(ctx, im.keeper, order, portID, channelID); err != nil {
 		return "", err
 	}
@@ -103,6 +105,8 @@ func (im IBCModule) OnChanOpenTry(
 	counterparty channeltypes.Counterparty,
 	counterpartyVersion string,
 ) (string, error) {
+	fmt.Printf("TRANSFER - CHAN OPEN TRY - PORT: %s\n", portID)
+
 	if err := ValidateTransferChannelParams(ctx, im.keeper, order, portID, channelID); err != nil {
 		return "", err
 	}
@@ -127,6 +131,8 @@ func (im IBCModule) OnChanOpenAck(
 	_ string,
 	counterpartyVersion string,
 ) error {
+	fmt.Printf("TRANSFER - CHAN OPEN ACK - CHANNEL: %s  - PORT: %s\n", channelID, portID)
+
 	if counterpartyVersion != types.Version {
 		return sdkerrors.Wrapf(types.ErrInvalidVersion, "invalid counterparty version: %s, expected %s", counterpartyVersion, types.Version)
 	}
@@ -139,6 +145,7 @@ func (im IBCModule) OnChanOpenConfirm(
 	portID,
 	channelID string,
 ) error {
+	fmt.Printf("TRANSFER - CHAN OPEN CONFIRM - CHANNEL: %s - PORT: %s\n", channelID, portID)
 	return nil
 }
 
@@ -220,6 +227,8 @@ func (im IBCModule) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
+	fmt.Printf("TRANSFER - ON ACK PACKET - SOURCE PORT: %s, DESTINATION PORT: %s", packet.GetSourcePort(), packet.GetSourceChannel())
+
 	var ack channeltypes.Acknowledgement
 	if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet acknowledgement: %v", err)

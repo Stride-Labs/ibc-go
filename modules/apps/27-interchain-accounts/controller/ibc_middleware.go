@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
@@ -48,16 +50,21 @@ func (im IBCMiddleware) OnChanOpenInit(
 	counterparty channeltypes.Counterparty,
 	version string,
 ) (string, error) {
+	fmt.Printf("ICA CONTROLLER - CHAN OPEN INIT - PORT: %s\n", portID)
+
 	if !im.keeper.IsControllerEnabled(ctx) {
+		fmt.Println("CONTROLLER NOT ENABLED IN CHAN OPEN INIT")
 		return "", types.ErrControllerSubModuleDisabled
 	}
 
 	version, err := im.keeper.OnChanOpenInit(ctx, order, connectionHops, portID, channelID, chanCap, counterparty, version)
 	if err != nil {
+		fmt.Println("ERROR CALLING KEEPER ON CHAN OPEN INIT:", err.Error())
 		return "", err
 	}
 
 	if err := im.keeper.ClaimCapability(ctx, chanCap, host.ChannelCapabilityPath(portID, channelID)); err != nil {
+		fmt.Println("ERROR CLAIMING CAPABILITY IN CHAN OPEN INIT:", err.Error())
 		return "", err
 	}
 
@@ -65,10 +72,14 @@ func (im IBCMiddleware) OnChanOpenInit(
 	// the version returned is discarded as the ica-auth module does not have permission to edit the version string.
 	// ics27 will always return the version string containing the Metadata struct which is created during the `RegisterInterchainAccount` call.
 	if im.app != nil && im.keeper.IsMiddlewareEnabled(ctx, portID, connectionHops[0]) {
+		fmt.Println("MIDDLEWARE ENABLED ON CHAN OPEN INIT")
 		if _, err := im.app.OnChanOpenInit(ctx, order, connectionHops, portID, channelID, nil, counterparty, version); err != nil {
 			return "", err
 		}
+	} else {
+		fmt.Println("MIDDLEWARE NOT ENABLED ON CHAN OPEN INIT")
 	}
+	fmt.Println("DONE WITH CHAN OPEN INIT")
 
 	return version, nil
 }
@@ -84,6 +95,8 @@ func (im IBCMiddleware) OnChanOpenTry(
 	counterparty channeltypes.Counterparty,
 	counterpartyVersion string,
 ) (string, error) {
+	fmt.Printf("ICA CONTROLLER - CHAN OPEN TRY - PORT: %s\n", portID)
+
 	return "", sdkerrors.Wrap(icatypes.ErrInvalidChannelFlow, "channel handshake must be initiated by controller chain")
 }
 
@@ -100,11 +113,15 @@ func (im IBCMiddleware) OnChanOpenAck(
 	counterpartyChannelID string,
 	counterpartyVersion string,
 ) error {
+	fmt.Printf("ICA CONTROLLER - CHAN OPEN ACK - CHANNEL: %s, PORT: %s\n", channelID, portID)
+
 	if !im.keeper.IsControllerEnabled(ctx) {
+		fmt.Println("CONTROLLER NOT ENABLED IN CHAN OPEN ACK")
 		return types.ErrControllerSubModuleDisabled
 	}
 
 	if err := im.keeper.OnChanOpenAck(ctx, portID, channelID, counterpartyVersion); err != nil {
+		fmt.Println("ERROR CALLING KEEPER ON CHAN OPEN ACK:", err.Error())
 		return err
 	}
 
@@ -115,8 +132,13 @@ func (im IBCMiddleware) OnChanOpenAck(
 
 	// call underlying app's OnChanOpenAck callback with the counterparty app version.
 	if im.app != nil && im.keeper.IsMiddlewareEnabled(ctx, portID, connectionID) {
+		fmt.Println("MIDDLEWARE ENABLED ON CHAN OPEN ACK")
 		return im.app.OnChanOpenAck(ctx, portID, channelID, counterpartyChannelID, counterpartyVersion)
+	} else {
+		fmt.Println("MIDDLEWARE NOT ENABLED ON CHAN OPEN ACK")
 	}
+
+	fmt.Println("DONE WITH CHAN OPEN ACK")
 
 	return nil
 }
@@ -127,6 +149,7 @@ func (im IBCMiddleware) OnChanOpenConfirm(
 	portID,
 	channelID string,
 ) error {
+	fmt.Printf("ICA CONTROLLER - CHAN OPEN CONFIRM - CHANNEL: %s, PORT: %s\n", channelID, portID)
 	return sdkerrors.Wrap(icatypes.ErrInvalidChannelFlow, "channel handshake must be initiated by controller chain")
 }
 
@@ -181,7 +204,10 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
+	fmt.Printf("ICA CONTROLLER - ON ACK PACKET - SOURCE PORT: %s, DESTINATION PORT: %s\n", packet.GetSourcePort(), packet.GetSourceChannel())
+
 	if !im.keeper.IsControllerEnabled(ctx) {
+		fmt.Println("CONTROLLER NOT ENABLED IN ON ACK PACKET")
 		return types.ErrControllerSubModuleDisabled
 	}
 
@@ -192,7 +218,10 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 
 	// call underlying app's OnAcknowledgementPacket callback.
 	if im.app != nil && im.keeper.IsMiddlewareEnabled(ctx, packet.GetSourcePort(), connectionID) {
+		fmt.Println("MIDDLEWARE ENABLED ON ACK PACKET")
 		return im.app.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+	} else {
+		fmt.Println("MIDDLEWARE NOT ENABLED ON ACK PACKET")
 	}
 
 	return nil
