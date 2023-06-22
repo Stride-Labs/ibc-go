@@ -49,10 +49,10 @@ func NewKeeper(
 		paramSpace = paramSpace.WithKeyTable(keyTable)
 	}
 
-	// panic if any of the keepers passed in is empty
-	if isEmpty(stakingKeeper) {
-		panic(fmt.Errorf("cannot initialize IBC keeper: empty staking keeper"))
-	}
+	// // panic if any of the keepers passed in is empty
+	// if isEmpty(stakingKeeper) {
+	// 	panic(fmt.Errorf("cannot initialize IBC keeper: empty staking keeper"))
+	// }
 	if isEmpty(upgradeKeeper) {
 		panic(fmt.Errorf("cannot initialize IBC keeper: empty upgrade keeper"))
 	}
