@@ -146,6 +146,7 @@ func (cs ClientState) UpdateState(ctx sdk.Context, cdc codec.BinaryCodec, client
 	if height.GT(cs.LatestHeight) {
 		cs.LatestHeight = height
 	}
+	fmt.Printf("HEIGHT: %+v\n", height)
 
 	consensusState := &ConsensusState{
 		Timestamp:          header.GetTime(),
