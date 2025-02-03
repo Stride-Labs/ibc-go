@@ -27,6 +27,12 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 	if options.SignModeHandler == nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "sign mode handler is required for AnteHandler")
 	}
+	if options.TxDecoder == nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "tx decoder is required for ante builder")
+	}
+	if options.TxJSONEncoder == nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "tx json encoder is required for ante builder")
+	}
 
 	anteDecorators := []sdk.AnteDecorator{
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
@@ -39,7 +45,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewSetPubKeyDecorator(options.AccountKeeper), // SetPubKeyDecorator must be called before all signature verification decorators
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
 		ante.NewSigGasConsumeDecorator(options.AccountKeeper, options.SigGasConsumer),
-		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
+		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler, options.TxDecoder, options.TxJSONEncoder),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibcante.NewRedundantRelayDecorator(options.IBCKeeper),
 	}
