@@ -40,6 +40,11 @@ import (
 	"github.com/cosmos/ibc-go/v7/testing/simapp/params"
 )
 
+const (
+	flagBechPrefix = "bech32-prefix"
+	flagCoinType   = "coin-type"
+)
+
 // NewRootCmd creates a new root command for simd. It is called once in the
 // main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
@@ -62,6 +67,20 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			cmd.SetOut(cmd.OutOrStdout())
 			cmd.SetErr(cmd.ErrOrStderr())
 
+			bech32Prefix, err := cmd.Root().PersistentFlags().GetString(flagBechPrefix)
+			if err != nil {
+				return err
+			}
+			coinType, err := cmd.Root().PersistentFlags().GetUint32(flagCoinType)
+			if err != nil {
+				return err
+			}
+
+			cfg := sdk.GetConfig()
+			cfg.SetBech32PrefixForAccount(bech32Prefix, bech32Prefix+sdk.PrefixPublic)
+			cfg.SetCoinType(coinType)
+			cfg.Seal()
+
 			initClientCtx, err := client.ReadPersistentCommandFlags(initClientCtx, cmd.Flags())
 			if err != nil {
 				return err
@@ -82,6 +101,9 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			return server.InterceptConfigsPreRunHandler(cmd, customAppTemplate, customAppConfig, customTMConfig)
 		},
 	}
+
+	rootCmd.PersistentFlags().String(flagBechPrefix, "cosmos", "The bech32 prefix for accounts")
+	rootCmd.PersistentFlags().Uint32(flagCoinType, 118, "The coin type code for HD derivation")
 
 	initRootCmd(rootCmd, encodingConfig)
 
@@ -157,8 +179,6 @@ lru_size = 0`
 }
 
 func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
-	cfg := sdk.GetConfig()
-	cfg.Seal()
 	gentxModule := simapp.ModuleBasics[genutiltypes.ModuleName].(genutil.AppModuleBasic)
 
 	rootCmd.AddCommand(
